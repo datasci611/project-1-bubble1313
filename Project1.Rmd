@@ -1,0 +1,137 @@
+---
+title: "Project1"
+author: "Yu Yuan"
+date: "9/21/2018"
+output: html_document
+---
+# Project 1
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library("viridis")
+```
+
+1. `iris` Dataset
+
+```{r}
+data("iris")
+ti <- as_tibble(iris) 
+ggplot(ti, mapping = aes(x =  Sepal.Length, y = Petal.Length )) +
+         geom_point(mapping = aes(color = Species)) +
+         geom_smooth() +
+         geom_vline(xintercept = sepal_l_mean <- summarise(ti,mean(Sepal.Length))[[1]],color = "grey") +
+         annotate('text', label='sepal avg length', x=sepal_l_mean, y=7) +
+         geom_hline(yintercept = petal_l_mean <- summarise(ti,mean(Petal.Length))[[1]],color = "grey") +
+         annotate('text', label='petal avg length', x= 7, y= petal_l_mean) +
+         labs(title = "The Petal's and Sepal's length relation in Iris", x = "Sepal's length", y = "Petal's length")
+
+```
+
+*Communicate results:*
+
+This figure was drawn based on the “iris” data set in R, which is derived from “The irises of the Gaspe Peninsula” and “The use of multiple measurements in taxonomic problems.”, in which it gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. It shows the relationship between petal’s and sepal’s length as well as distinct the species in color. Overall, there is positive relation between petal’s length and sepal’s length, which is especially applicable for the “virginica” and “versicolor” species. Also, by comparing the data with the average length of sepal & petal, it’s clear that the irises in setosa species grow regularly small than others and the Virginica iris is the largest one.
+
+For the next step, it would be interesting to explore the width differences among iris taxonomies as well as the relationship between their width and length. 
+
+
+2. `USArreste` Dataset
+
+```{r}
+data("USArrests")
+ta <- as_tibble(USArrests)
+ta$State = rownames(USArrests)
+ta %>% 
+  select(State,everything())  %>% 
+  mutate(State = reorder(State, UrbanPop)) %>%  
+  ggplot(mapping = aes(x = cut_number(UrbanPop,5), y = State)) +
+  geom_point(mapping = aes(color = (Rape/1000), size = (Rape/1000))) +
+  scale_color_viridis() +
+  labs(title = "The Rape Crime Rates in US States with Different Urban Population", x = "Urban Population Percentage", y = "States", color = "Rape Rate", size = "Rape Rate")
+
+```
+
+*Communicate results:*
+
+This figure was drawn by the data selected from the “USArrests” dataset in R, which is derived from the “World Almanac and Book of facts 1975”. It contains statistics, in arrests per 100,000 residents for assault, murder, and rape in each of the 50 US states in 1973. Also given is the percent of the population living in urban areas. 
+
+With the aim of exploring how the urban population will effect the rape crime rate in different states, I used the scatter plot and represent the rape data in percentage, group the 50 States’ urban population in 5 levels and rank them by it. Both the size and the color is used to represent the rape rate. As shown in the figure, in general the urban percentage in the scale of (30%,60%) show relative low rape crime rate and the states in high urban population have higher rape crime rate.
+
+For the next step, the murder rate and the assault rate will be analyzed to see their distribution in different urban population. We will see what is the proper urban population percentage for a state to keep low crime rate. To explore more, the location data may be involved.
+
+
+3. `Orange` Dataset
+
+```{r}
+data("Orange")
+to <- as_tibble(Orange)
+
+to$age <- factor(to$age, levels = rev(levels(factor(to$age))))
+
+to %>%
+  ggplot(mapping = aes(x = Tree, y=circumference, fill = factor(age))) +
+    scale_fill_viridis(discrete = TRUE) +     
+    geom_bar(stat="identity", position="stack") +
+    coord_flip() +
+    labs(title = "The growth of 5 orange trees", x = "Tree", y = "Circumstance", fill = "Age")
+
+```
+*Communicate results:*
+
+This figure was drawn by the data selected from the “Orange” dataset in R, which was originally part of package nlme, and that has methods (including for [, as.data.frame, plot and print) for its grouped-data classes. It contains 35 rows and 3 columns of records of the growth of orange trees. 
+
+As shown in the figure, the growth of circumsatnce in different age nodes varies from each tree. And there is no garantee that larger youth tree would be more bigger when they grow up. One thing bring my attention is that in the age of [1372,1582], the trees would have faster growth rate than other time.
+
+For the next time, the growth rate in different age scop will be compared to prove if there is a time scope for the orange trees when they usually grow faster than ever.
+
+
+4. `diamonds` Dataset
+
+```{r}
+data("airquality")
+tai <- as_tibble(airquality)
+
+tai %>% 
+  filter(!is.na(Ozone))%>%
+  mutate(
+    O_pollution = case_when(
+      Ozone <= 50                 ~"Good",
+      Ozone > 50 & Ozone <= 80   ~"Moderate",
+      Ozone > 80                 ~"Unhealthy")) %>%
+  group_by(Month,O_pollution) %>%
+  summarise(N_pollution = n()) %>%
+  ggplot(mapping = aes(x = Month, y = O_pollution, label = N_pollution)) +
+      geom_tile(mapping = aes(fill = N_pollution)) +
+      geom_text(size = 5, color = "white") +
+      scale_fill_viridis() +
+      labs(title = "Air Quality from May to Sep in New York", x = "Month", y = "Ozone Pollution", fill = "# of Dates")
+
+```
+*Communicate results:*
+
+This figure was drawn by the data selected from the “airquality” dataset in R, which were obtained from the "New York State Department of Conservation (ozone data) and the National Weather Service". It contains 154 observations on 6 variables-- `Ozone`, `Solar.R`, `Wind`, `Temp`, `Month` and `Day`. 
+
+Adopted from the "Ozone Pollution Standards", I organized the Ozone variable in 3 groups-- `Good`, `Moderate` and `Unhealthy`; then count the Ozone pollution per month. Air quality in May and September is good - over 80% days in these two month are in good quality. On the other hand, the air condition in July & August are not good. Since nearly half Ozone data in June is empty, it's impossible to see the statistical result in this month.
+
+For the next step, other variables like the `Solar.R`, `Temp` and `Wild` will be analyzed with the `Ozone` especially on July & August to explore their relationships. 
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
